@@ -30,7 +30,7 @@ from tkinter import ttk
 #                              Версия приложения                               #
 ################################################################################
 
-APP_VERSION = "0.2.0"
+APP_VERSION = "1.0.0"
 
 def get_version() -> str:
     """Return the application version string."""
