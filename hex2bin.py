@@ -1,14 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-********************************************************************************
+ *******************************************************************************
  * @file    hex2bin.py
- * @version 0.2.0
+ * @version 1.0.0
  * @author  Anton Chernov
  * @date    04/24/2026
  * @brief   Hex/Dec to Binary Converter (32-bit) with GUI
  *
-********************************************************************************
+ * @details A simple GUI tool for visualising and editing a 32-bit value
+ *          as a set of individual bit checkboxes, a hexadecimal field and
+ *          a decimal field.
+ *
+ *          Supported operations:
+ *          - Bit-level editing via checkboxes  (bits 31..0)
+ *          - Direct HEX / DEC input with Enter confirmation
+ *          - Increment / Decrement by 1
+ *          - Logical shift left / shift right by 1
+ *
+ ******************************************************************************
 """
 
 ############################ Импорт модулей ####################################
@@ -217,13 +227,20 @@ class Hex2BinConverter:
         @details Updates the HEX entry, DEC entry, and all bit checkboxes
                  to reflect the current value of ``self.value``.
         """
-        pass
+        self.hex_var.set(f"0x{self.value:08X}")
+        self.dec_var.set(str(self.value & 0xFFFFFFFF))
+
+        for bit_pos, var in self.checkvar_list:
+            var.set(bool((self.value >> bit_pos) & 1))
 
     def update_from_bits(self):
         """
         @brief  Rebuild the internal value from the checkbox states and refresh.
         """
         self.value = 0
+        for bit_pos, var in self.checkvar_list:
+            if var.get():
+                self.value |= (1 << bit_pos)
         self.update_display()
 
     def increment(self):
@@ -264,8 +281,18 @@ class Hex2BinConverter:
     def set_from_hex_entry(self):
         """
         @brief  Parse the HEX entry field and update the internal value.
+
+        @details Accepts strings with or without the '0x' / '0X' prefix.
+                 Restores the previous HEX text on parse error.
         """
-        pass
+        ret_val = None
+        try:
+            hex_text = self.hex_var.get().strip()
+            self.value = int(hex_text, 16) & 0xFFFFFFFF
+            self.update_display()
+        except ValueError:
+            self.hex_var.set(f"0x{self.value:08X}")
+        return ret_val
 
     def set_from_dec_entry(self):
         """
@@ -273,7 +300,14 @@ class Hex2BinConverter:
 
         @details Restores the previous DEC text on parse error.
         """
-        pass
+        ret_val = None
+        try:
+            dec_text = self.dec_var.get().strip()
+            self.value = int(dec_text, 10) & 0xFFFFFFFF
+            self.update_display()
+        except ValueError:
+            self.dec_var.set(str(self.value & 0xFFFFFFFF))
+        return ret_val
 
 
 ################################################################################
