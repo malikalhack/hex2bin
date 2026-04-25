@@ -3,9 +3,10 @@
 """
 ********************************************************************************
  * @file    hex2bin.py
- * @version 0.1.0
+ * @version 0.2.0
  * @author  Anton Chernov
  * @date    04/24/2026
+ * @brief   Hex/Dec to Binary Converter (32-bit) with GUI
  *
 ********************************************************************************
 """
@@ -15,12 +16,11 @@ import sys
 import tkinter as tk
 from tkinter import ttk
 
-
 ################################################################################
 #                              Версия приложения                               #
 ################################################################################
 
-APP_VERSION = "0.1.0"
+APP_VERSION = "0.2.0"
 
 def get_version() -> str:
     """Return the application version string."""
@@ -70,6 +70,127 @@ class Hex2BinConverter:
         self.root.resizable(False, False)
 
         self.value = 0
+        self.checkvar_list = []
+
+        # Главный контейнер
+        main_frame = ttk.Frame(root, padding="10")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Левая панель - биты
+        left_frame = ttk.LabelFrame(
+            main_frame,
+            text="32-bit значение",
+            padding="10"
+        )
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5)
+
+        # Строка с битами (31-24)
+        bits_frame1 = ttk.Frame(left_frame)
+        bits_frame1.pack(fill=tk.X, pady=2)
+        for i in range(31, 23, -1):
+            self.create_bit_checkbox(bits_frame1, i)
+
+        # Строка с битами (23-16)
+        bits_frame2 = ttk.Frame(left_frame)
+        bits_frame2.pack(fill=tk.X, pady=2)
+        for i in range(23, 15, -1):
+            self.create_bit_checkbox(bits_frame2, i)
+
+        # Строка с битами (15-8)
+        bits_frame3 = ttk.Frame(left_frame)
+        bits_frame3.pack(fill=tk.X, pady=2)
+        for i in range(15, 7, -1):
+            self.create_bit_checkbox(bits_frame3, i)
+
+        # Строка с битами (7-0)
+        bits_frame4 = ttk.Frame(left_frame)
+        bits_frame4.pack(fill=tk.X, pady=2)
+        for i in range(7, -1, -1):
+            self.create_bit_checkbox(bits_frame4, i)
+
+        # Правая панель - управление и отображение
+        right_frame = ttk.LabelFrame(
+            main_frame,
+            text="Управление",
+            padding="15"
+        )
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, padx=5)
+
+        # Поле HEX
+        ttk.Label(right_frame, text="HEX:").grid(
+            row=0,
+            column=0,
+            sticky=tk.W,
+            pady=5
+        )
+        self.hex_var = tk.StringVar(value="0x00000000")
+        self.hex_entry = ttk.Entry(
+            right_frame,
+            textvariable=self.hex_var,
+            width=15
+        )
+        self.hex_entry.grid(row=0, column=1, sticky=tk.EW, padx=10)
+        self.hex_entry.bind('<Return>',   lambda e: self.set_from_hex_entry())
+        self.hex_entry.bind('<KP_Enter>', lambda e: self.set_from_hex_entry())
+
+        # Поле DEC
+        ttk.Label(right_frame, text="DEC:").grid(
+            row=1,
+            column=0,
+            sticky=tk.W,
+            pady=5
+        )
+        self.dec_var = tk.StringVar(value="0")
+        self.dec_entry = ttk.Entry(
+            right_frame,
+            textvariable=self.dec_var,
+            width=15
+        )
+        self.dec_entry.grid(row=1, column=1, sticky=tk.EW, padx=10)
+        self.dec_entry.bind('<Return>',   lambda e: self.set_from_dec_entry())
+        self.dec_entry.bind('<KP_Enter>', lambda e: self.set_from_dec_entry())
+
+        # Разделитель
+        ttk.Separator(right_frame, orient=tk.HORIZONTAL).grid(
+            row=2, column=0, columnspan=2, sticky=tk.EW, pady=10)
+
+        # Кнопки управления
+        btn_frame = ttk.Frame(right_frame)
+        btn_frame.grid(row=3, column=0, columnspan=2, sticky=tk.EW)
+
+        ttk.Button(
+            btn_frame,
+            text="+",
+            width=6,
+            command=self.increment
+        ).pack(side=tk.LEFT, padx=2)
+        ttk.Button(
+            btn_frame,
+            text="-",
+            width=6,
+            command=self.decrement
+        ).pack(side=tk.LEFT, padx=2)
+        ttk.Button(
+            btn_frame,
+            text="<<",
+            width=6,
+            command=self.shift_left
+        ).pack(side=tk.LEFT, padx=2)
+        ttk.Button(
+            btn_frame,
+            text=">>",
+            width=6,
+            command=self.shift_right
+        ).pack(side=tk.LEFT, padx=2)
+        ttk.Button(
+            btn_frame,
+            text="~",
+            width=6,
+            command=self.invert
+        ).pack(side=tk.LEFT, padx=2)
+
+        right_frame.columnconfigure(1, weight=1)
+
         self.update_display()
 
     def create_bit_checkbox(self, parent, bit_pos):
@@ -79,7 +200,15 @@ class Hex2BinConverter:
         @param[in]  parent   Parent Tkinter widget (frame row).
         @param[in]  bit_pos  Bit position in the 32-bit value (0..31).
         """
-        pass
+        var = tk.BooleanVar()
+        self.checkvar_list.append((bit_pos, var))
+
+        def on_bit_change():
+            self.update_from_bits()
+
+        cb = ttk.Checkbutton(parent, text=str(bit_pos), variable=var,
+                             command=on_bit_change, width=3)
+        cb.pack(side=tk.LEFT, padx=2)
 
     def update_display(self):
         """
