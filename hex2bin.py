@@ -1,24 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
- ******************************************************************************
+********************************************************************************
  * @file    hex2bin.py
- * @version 0.0.0
+ * @version 0.1.0
  * @author  Anton Chernov
  * @date    04/24/2026
  *
-******************************************************************************
+********************************************************************************
 """
 
 ############################ Импорт модулей ####################################
 import sys
 import tkinter as tk
+from tkinter import ttk
+
 
 ################################################################################
 #                              Версия приложения                               #
 ################################################################################
 
-APP_VERSION = "0.0.0"
+APP_VERSION = "0.1.0"
 
 def get_version() -> str:
     """Return the application version string."""
@@ -45,6 +47,17 @@ def validate_py_version() -> bool:
 ################################################################################
 
 class Hex2BinConverter:
+    """
+    @brief  Main GUI class for the 32-bit Hex/Dec to Binary converter.
+
+    @details Provides interactive editing of a 32-bit unsigned integer via:
+             - Individual bit checkboxes (bits 31..0, arranged in four rows)
+             - Hexadecimal entry field (prefix '0x' accepted)
+             - Decimal entry field
+             - Arithmetic/shift buttons: +, -, <<, >>
+             All controls stay synchronised on every change.
+    """
+
     def __init__(self, root):
         """
         @brief  Initialize the main application window.
@@ -62,12 +75,18 @@ class Hex2BinConverter:
     def create_bit_checkbox(self, parent, bit_pos):
         """
         @brief  Create a labelled checkbox for a single bit position.
+
+        @param[in]  parent   Parent Tkinter widget (frame row).
+        @param[in]  bit_pos  Bit position in the 32-bit value (0..31).
         """
         pass
 
     def update_display(self):
         """
         @brief  Synchronise all UI controls from the internal value.
+
+        @details Updates the HEX entry, DEC entry, and all bit checkboxes
+                 to reflect the current value of ``self.value``.
         """
         pass
 
@@ -122,6 +141,8 @@ class Hex2BinConverter:
     def set_from_dec_entry(self):
         """
         @brief  Parse the DEC entry field and update the internal value.
+
+        @details Restores the previous DEC text on parse error.
         """
         pass
 
